@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
 
+import java.util.Properties;
+
 public class FovBlock extends TeamNamedEntityBlock {
     public FovBlock(Properties properties) {
         super(properties);

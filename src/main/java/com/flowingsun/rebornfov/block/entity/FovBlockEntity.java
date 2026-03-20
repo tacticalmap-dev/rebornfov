@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, PlacementAwareBlockEntity {
+
     private NonNullList<ItemStack> items = NonNullList.withSize(54, ItemStack.EMPTY);
     private String presetId = RebornFovCommonConfig.defaultPreset;
     private long nextRefreshTick;
@@ -47,16 +48,20 @@ public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyC
             this.customName = stack.getHoverName();
         }
         this.teamId = TeamResolver.resolveTeamId(serverPlayer);
-        this.pointId = "fov@" + worldPosition.asShortString() + "@" + serverLevel.dimension().location();
+        this.pointId = "fov@" + worldPosition.toShortString() + "@" + serverLevel.dimension().location();
         registerSelf(serverLevel);
         setChanged();
     }
 
     public void registerSelf(ServerLevel serverLevel) {
-        if (teamId.isBlank()) {
-            return;
-        }
-        RebornFovSavedData.get(serverLevel).putTarget(new TeleportTarget(pointId, teamId, "fov", getDisplayName().getString(), serverLevel.dimension().location(), worldPosition));
+        if (teamId.isBlank()) return;
+
+        RebornFovSavedData.get(serverLevel).putTarget(
+                new TeleportTarget(pointId, teamId, "fov",
+                        getDisplayName().getString(),
+                        serverLevel.dimension().location(),
+                        worldPosition)
+        );
     }
 
     @Override
@@ -68,28 +73,32 @@ public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyC
     }
 
     public void serverTick() {
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return;
-        }
+        if (!(level instanceof ServerLevel serverLevel)) return;
+
         if (nextRefreshTick <= 0L) {
             nextRefreshTick = serverLevel.getGameTime() + 20L;
         }
-        if (serverLevel.getGameTime() < nextRefreshTick) {
-            return;
-        }
+        if (serverLevel.getGameTime() < nextRefreshTick) return;
 
         SupplyPresetManager.SupplyPreset preset = SupplyPresetManager.getPreset(presetId);
         long soonest = serverLevel.getGameTime() + 20L * 60L;
+
         for (SupplyPresetManager.SupplyEntry entry : preset.entries()) {
             int amount = Math.max(0, (int) Math.round(entry.amount() * RebornFovCommonConfig.globalAmountMultiplier));
-            long interval = Math.max(20L, Math.round(entry.intervalSeconds() * RebornFovCommonConfig.globalIntervalMultiplier * 20.0D));
+            long interval = Math.max(20L,
+                    Math.round(entry.intervalSeconds() * RebornFovCommonConfig.globalIntervalMultiplier * 20.0D));
+
             soonest = Math.min(soonest, serverLevel.getGameTime() + interval);
-            if (amount <= 0) {
-                continue;
-            }
-            ItemStack item = new ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(entry.itemId()), amount);
+
+            if (amount <= 0) continue;
+
+            ItemStack item = new ItemStack(
+                    net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(entry.itemId()),
+                    amount
+            );
             addToInventory(item);
         }
+
         nextRefreshTick = soonest;
         setChanged();
     }
@@ -97,13 +106,19 @@ public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyC
     private void addToInventory(ItemStack stack) {
         for (int i = 0; i < items.size() && !stack.isEmpty(); i++) {
             ItemStack existing = items.get(i);
+
             if (existing.isEmpty()) {
                 items.set(i, stack.copy());
                 stack.setCount(0);
                 return;
             }
-            if (ItemStack.isSameItemSameTags(existing, stack) && existing.getCount() < existing.getMaxStackSize()) {
-                int moved = Math.min(stack.getCount(), existing.getMaxStackSize() - existing.getCount());
+
+            if (ItemStack.isSameItemSameTags(existing, stack)
+                    && existing.getCount() < existing.getMaxStackSize()) {
+
+                int moved = Math.min(stack.getCount(),
+                        existing.getMaxStackSize() - existing.getCount());
+
                 existing.grow(moved);
                 stack.shrink(moved);
             }
@@ -114,7 +129,8 @@ public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyC
         return new MenuProvider() {
             @Override
             public Component getDisplayName() {
-                return Component.translatable("screen.rebornfov.preset", FovBlockEntity.this.getDisplayName().getString());
+                return Component.translatable("screen.rebornfov.preset",
+                        FovBlockEntity.this.getDisplayName().getString());
             }
 
             @Override
@@ -134,12 +150,16 @@ public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyC
         return presetId;
     }
 
+    // ✅ 1.20 必须实现
+    @Override
+    public boolean stillValid(Player player) {
+        return true;
+    }
+
     @Override
     public int[] getSlotsForFace(net.minecraft.core.Direction direction) {
         int[] slots = new int[items.size()];
-        for (int i = 0; i < items.size(); i++) {
-            slots[i] = i;
-        }
+        for (int i = 0; i < items.size(); i++) slots[i] = i;
         return slots;
     }
 
@@ -155,11 +175,14 @@ public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyC
 
     @Override
     protected Component getDefaultName() {
-        if (customName != null) {
-            return customName;
-        }
-        return Component.translatable("block.rebornfov.fov").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(" #" + worldPosition.getX() + "," + worldPosition.getY() + "," + worldPosition.getZ()));
+        if (customName != null) return customName;
+
+        return Component.translatable("block.rebornfov.fov")
+                .withStyle(ChatFormatting.GOLD)
+                .append(Component.literal(" #"
+                        + worldPosition.getX() + ","
+                        + worldPosition.getY() + ","
+                        + worldPosition.getZ()));
     }
 
     @Override
@@ -199,25 +222,31 @@ public class FovBlockEntity extends BaseContainerBlockEntity implements WorldlyC
         tag.putLong("nextRefreshTick", nextRefreshTick);
         tag.putString("teamId", teamId);
         tag.putString("pointId", pointId);
+
         if (customName != null) {
             tag.putString("customName", Component.Serializer.toJson(customName));
         }
+
         ContainerHelper.saveAllItems(tag, items);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
+
         presetId = tag.getString("presetId");
         if (presetId.isBlank()) {
             presetId = RebornFovCommonConfig.defaultPreset;
         }
+
         nextRefreshTick = tag.getLong("nextRefreshTick");
         teamId = tag.getString("teamId");
         pointId = tag.getString("pointId");
+
         if (tag.contains("customName")) {
             customName = Component.Serializer.fromJson(tag.getString("customName"));
         }
+
         items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, items);
     }

@@ -1,0 +1,10 @@
+{
+  "itemGroup.rebornfov.main": "Reborn FOV",
+  "block.rebornfov.base": "Base",
+  "block.rebornfov.teambag": "Team Bag",
+  "block.rebornfov.fov": "Frontline Outpost",
+  "screen.rebornfov.base": "Base Teleport List - %s",
+  "screen.rebornfov.base_hint": "Double left click a Team Bag / FOV entry to teleport.",
+  "screen.rebornfov.preset": "FOV Preset - %s",
+  "screen.rebornfov.preset_hint": "Shift + Right Click opens this list. Left click to apply preset."
+}

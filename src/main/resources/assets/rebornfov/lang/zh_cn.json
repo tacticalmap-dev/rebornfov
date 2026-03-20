@@ -1,0 +1,10 @@
+{
+  "itemGroup.rebornfov.main": "Reborn FOV",
+  "block.rebornfov.base": "基地",
+  "block.rebornfov.teambag": "队包",
+  "block.rebornfov.fov": "前线兵站",
+  "screen.rebornfov.base": "基地传送列表 - %s",
+  "screen.rebornfov.base_hint": "左键双击对应队包或兵站即可传送。",
+  "screen.rebornfov.preset": "兵站预设 - %s",
+  "screen.rebornfov.preset_hint": "潜行+右键打开列表，左键选择预设。"
+}

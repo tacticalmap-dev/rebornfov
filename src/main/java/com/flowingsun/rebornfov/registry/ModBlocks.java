@@ -15,10 +15,24 @@ import net.minecraftforge.registries.RegistryObject;
 public class ModBlocks {
     public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, RebornFovMod.MOD_ID);
 
+    private static BlockBehaviour.Properties nonFullBlock(BlockBehaviour.Properties properties) {
+        return properties
+                .noOcclusion()
+                .isViewBlocking((state, level, pos) -> false)
+                .isSuffocating((state, level, pos) -> false)
+                .isRedstoneConductor((state, level, pos) -> false);
+    }
+
     public static final RegistryObject<Block> TEAM_BAG = REGISTRY.register("teambag",
-            () -> new TeamBagBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(3.0F).sound(SoundType.WOOL)));
+            () -> new TeamBagBlock(nonFullBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(3.0F).sound(SoundType.WOOL).requiresCorrectToolForDrops()
+            )));
     public static final RegistryObject<Block> FOV = REGISTRY.register("fov",
-            () -> new FovBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(4.0F).sound(SoundType.METAL)));
+            () -> new FovBlock(nonFullBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+            )));
     public static final RegistryObject<Block> BASE = REGISTRY.register("base",
-            () -> new BaseBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(5.0F).sound(SoundType.STONE)));
+            () -> new BaseBlock(nonFullBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(50.0F, 1200.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()
+            )));
 }

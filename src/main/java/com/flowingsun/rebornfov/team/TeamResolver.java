@@ -1,7 +1,7 @@
 package com.flowingsun.rebornfov.team;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 import net.minecraftforge.fml.ModList;
 
 import java.lang.reflect.Method;
@@ -16,7 +16,7 @@ public class TeamResolver {
             return ftbTeam;
         }
 
-        PlayerTeam scoreboardTeam = player.getTeam();
+        Team scoreboardTeam = player.getTeam();
         if (scoreboardTeam != null) {
             return "scoreboard:" + scoreboardTeam.getName();
         }

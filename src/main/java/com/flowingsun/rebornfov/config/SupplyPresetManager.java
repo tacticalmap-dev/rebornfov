@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class SupplyPresetManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -35,7 +36,7 @@ public class SupplyPresetManager {
             Path sample = dir.resolve("default.json");
             if (Files.notExists(sample)) {
                 JsonObject root = new JsonObject();
-                root.addProperty("displayName", "默认兵站预设");
+                root.addProperty("displayName", "Default Frontline Preset");
                 var entries = new com.google.gson.JsonArray();
                 entries.add(createEntry("minecraft:bread", 8, 120));
                 entries.add(createEntry("minecraft:arrow", 16, 60));
@@ -74,11 +75,11 @@ public class SupplyPresetManager {
         }
 
         if (PRESETS.isEmpty()) {
-            PRESETS.put("default", SupplyPreset.empty("default", "默认预设"));
+            PRESETS.put("default", SupplyPreset.empty("default", "Default Preset"));
         }
     }
 
-    private static java.util.Optional<SupplyPreset> loadPreset(Path path) {
+    private static Optional<SupplyPreset> loadPreset(Path path) {
         try {
             JsonObject root = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
             String fileName = path.getFileName().toString();
@@ -95,31 +96,74 @@ public class SupplyPresetManager {
                 }
             } else {
                 for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
+                    if ("displayName".equals(entry.getKey())) {
+                        continue;
+                    }
                     if (entry.getValue().isJsonObject()) {
                         JsonObject object = entry.getValue().getAsJsonObject();
                         object.addProperty("item", entry.getKey());
                         parseEntry(object).ifPresent(entries::add);
+                    } else {
+                        parseEntry(entry.getKey(), entry.getValue()).ifPresent(entries::add);
                     }
                 }
             }
-            return java.util.Optional.of(new SupplyPreset(id, displayName, entries));
+            return Optional.of(new SupplyPreset(id, displayName, entries));
         } catch (Exception ignored) {
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
     }
 
-    private static java.util.Optional<SupplyEntry> parseEntry(JsonObject object) {
+    private static Optional<SupplyEntry> parseEntry(JsonObject object) {
         if (!object.has("item")) {
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
         ResourceLocation itemId = ResourceLocation.tryParse(object.get("item").getAsString());
         Item item = itemId == null ? null : ForgeRegistries.ITEMS.getValue(itemId);
         if (item == null) {
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
         int amount = object.has("amount") ? object.get("amount").getAsInt() : 1;
-        int interval = object.has("intervalSeconds") ? object.get("intervalSeconds").getAsInt() : 60;
-        return java.util.Optional.of(new SupplyEntry(itemId, amount, interval));
+        int interval = object.has("intervalSeconds")
+                ? object.get("intervalSeconds").getAsInt()
+                : (object.has("interval") ? object.get("interval").getAsInt() : 60);
+        int maxCount = object.has("maxCount")
+                ? object.get("maxCount").getAsInt()
+                : (object.has("maxStock")
+                ? object.get("maxStock").getAsInt()
+                : (object.has("cap") ? object.get("cap").getAsInt() : -1));
+        return Optional.of(new SupplyEntry(itemId, amount, interval, maxCount));
+    }
+
+    private static Optional<SupplyEntry> parseEntry(String itemKey, JsonElement value) {
+        ResourceLocation itemId = ResourceLocation.tryParse(itemKey);
+        Item item = itemId == null ? null : ForgeRegistries.ITEMS.getValue(itemId);
+        if (item == null) {
+            return Optional.empty();
+        }
+
+        if (value.isJsonArray() && value.getAsJsonArray().size() >= 2) {
+            int amount = value.getAsJsonArray().get(0).getAsInt();
+            int interval = value.getAsJsonArray().get(1).getAsInt();
+            int maxCount = value.getAsJsonArray().size() >= 3 ? value.getAsJsonArray().get(2).getAsInt() : -1;
+            return Optional.of(new SupplyEntry(itemId, amount, interval, maxCount));
+        }
+
+        if (value.isJsonPrimitive()) {
+            String raw = value.getAsString();
+            String[] parts = raw.split("[-,:\\s]+");
+            if (parts.length >= 2) {
+                try {
+                    int amount = Integer.parseInt(parts[0]);
+                    int interval = Integer.parseInt(parts[1]);
+                    int maxCount = parts.length >= 3 ? Integer.parseInt(parts[2]) : -1;
+                    return Optional.of(new SupplyEntry(itemId, amount, interval, maxCount));
+                } catch (NumberFormatException ignored) {
+                    return Optional.empty();
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     public static Path getPresetDirectory() {
@@ -131,7 +175,10 @@ public class SupplyPresetManager {
     }
 
     public static SupplyPreset getPreset(String presetId) {
-        return PRESETS.getOrDefault(presetId, PRESETS.getOrDefault(RebornFovCommonConfig.defaultPreset, SupplyPreset.empty("default", "默认预设")));
+        return PRESETS.getOrDefault(
+                presetId,
+                PRESETS.getOrDefault(RebornFovCommonConfig.defaultPreset, SupplyPreset.empty("default", "Default Preset"))
+        );
     }
 
     public record SupplyPreset(String id, String displayName, List<SupplyEntry> entries) {
@@ -140,6 +187,6 @@ public class SupplyPresetManager {
         }
     }
 
-    public record SupplyEntry(ResourceLocation itemId, int amount, int intervalSeconds) {
+    public record SupplyEntry(ResourceLocation itemId, int amount, int intervalSeconds, int maxCount) {
     }
 }

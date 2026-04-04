@@ -1,10 +1,15 @@
-{
+﻿{
   "itemGroup.rebornfov.main": "Reborn FOV",
   "block.rebornfov.base": "基地",
   "block.rebornfov.teambag": "队包",
   "block.rebornfov.fov": "前线兵站",
   "screen.rebornfov.base": "基地传送列表 - %s",
-  "screen.rebornfov.base_hint": "左键双击对应队包或兵站即可传送。",
+  "screen.rebornfov.base_hint": "左键双击队包/兵站条目可传送。",
   "screen.rebornfov.preset": "兵站预设 - %s",
-  "screen.rebornfov.preset_hint": "潜行+右键打开列表，左键选择预设。"
+  "screen.rebornfov.preset_hint": "Shift + 右键打开列表，左键选择预设。",
+  "screen.rebornfov.name_editor": "命名：%s",
+  "screen.rebornfov.name_editor_hint": "为该点位设置名称（仅首次命名有效）。",
+  "screen.rebornfov.name_editor_input": "名称",
+  "screen.rebornfov.name_editor_confirm": "确认",
+  "message.rebornfov.named": "已命名：%s"
 }

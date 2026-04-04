@@ -15,6 +15,7 @@ public class ClientSetup {
         event.enqueueWork(() -> {
             MenuScreens.register(ModMenus.BASE.get(), BaseScreen::new);
             MenuScreens.register(ModMenus.FOV_PRESET.get(), FovPresetScreen::new);
+            MenuScreens.register(ModMenus.NAME_EDITOR.get(), NameEditorScreen::new);
         });
     }
 }

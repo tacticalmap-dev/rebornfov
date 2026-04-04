@@ -1,5 +1,6 @@
 package com.flowingsun.rebornfov.menu;
 
+import com.flowingsun.rebornfov.config.RebornFovCommonConfig;
 import com.flowingsun.rebornfov.data.RebornFovSavedData;
 import com.flowingsun.rebornfov.data.TeleportTarget;
 import com.flowingsun.rebornfov.registry.ModMenus;
@@ -43,7 +44,7 @@ public class BaseMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return player.blockPosition().distSqr(basePos) <= 64 * 64;
+        return player.blockPosition().distSqr(basePos) <= (long) RebornFovCommonConfig.maxTeleportDistance * RebornFovCommonConfig.maxTeleportDistance;
     }
 
     @Override

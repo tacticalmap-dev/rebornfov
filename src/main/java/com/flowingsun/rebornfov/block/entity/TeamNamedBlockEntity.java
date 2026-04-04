@@ -32,7 +32,7 @@ public abstract class TeamNamedBlockEntity extends BlockEntity implements Placem
             this.customName = stack.getHoverName();
         }
         this.teamId = TeamResolver.resolveTeamId(serverPlayer);
-        this.pointId = getBlockKind() + "@" + worldPosition.asShortString() + "@" + serverLevel.dimension().location();
+        this.pointId = getBlockKind() + "@" + worldPosition.toShortString() + "@" + serverLevel.dimension().location();
         registerSelf(serverLevel);
         setChanged();
     }
@@ -44,11 +44,14 @@ public abstract class TeamNamedBlockEntity extends BlockEntity implements Placem
         RebornFovSavedData.get(serverLevel).putTarget(new TeleportTarget(pointId, teamId, getBlockKind(), getDisplayName().getString(), serverLevel.dimension().location(), worldPosition));
     }
 
-    @Override
-    public void setRemoved() {
-        if (!remove && level instanceof ServerLevel serverLevel && !teamId.isBlank() && !pointId.isBlank()) {
+    public void unregisterSelf(ServerLevel serverLevel) {
+        if (!teamId.isBlank() && !pointId.isBlank()) {
             RebornFovSavedData.get(serverLevel).removeTarget(teamId, pointId);
         }
+    }
+
+    @Override
+    public void setRemoved() {
         super.setRemoved();
     }
 
@@ -60,9 +63,21 @@ public abstract class TeamNamedBlockEntity extends BlockEntity implements Placem
                 .append(Component.literal(" #" + worldPosition.getX() + "," + worldPosition.getY() + "," + worldPosition.getZ()));
     }
 
+    public boolean trySetCustomName(Component name) {
+        if (name == null || customName != null) {
+            return false;
+        }
+        customName = name.copy();
+        if (level instanceof ServerLevel serverLevel) {
+            registerSelf(serverLevel);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+        setChanged();
+        return true;
+    }
+
     public abstract String getBlockKind();
 
-    @Override
     public Component getCustomName() {
         return customName;
     }

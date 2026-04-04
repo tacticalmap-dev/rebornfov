@@ -19,5 +19,6 @@ public class ModNetwork {
     public static void register() {
         CHANNEL.registerMessage(packetId++, TeleportRequestPacket.class, TeleportRequestPacket::encode, TeleportRequestPacket::decode, TeleportRequestPacket::handle);
         CHANNEL.registerMessage(packetId++, SelectPresetPacket.class, SelectPresetPacket::encode, SelectPresetPacket::decode, SelectPresetPacket::handle);
+        CHANNEL.registerMessage(packetId++, RenameTargetPacket.class, RenameTargetPacket::encode, RenameTargetPacket::decode, RenameTargetPacket::handle);
     }
 }

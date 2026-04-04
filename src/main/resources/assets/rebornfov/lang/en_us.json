@@ -6,5 +6,10 @@
   "screen.rebornfov.base": "Base Teleport List - %s",
   "screen.rebornfov.base_hint": "Double left click a Team Bag / FOV entry to teleport.",
   "screen.rebornfov.preset": "FOV Preset - %s",
-  "screen.rebornfov.preset_hint": "Shift + Right Click opens this list. Left click to apply preset."
+  "screen.rebornfov.preset_hint": "Shift + Right Click opens this list. Left click to apply preset.",
+  "screen.rebornfov.name_editor": "Name %s",
+  "screen.rebornfov.name_editor_hint": "Set the name for this point (first name only).",
+  "screen.rebornfov.name_editor_input": "Name",
+  "screen.rebornfov.name_editor_confirm": "Confirm",
+  "message.rebornfov.named": "Named: %s"
 }

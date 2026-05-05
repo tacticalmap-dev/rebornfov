@@ -32,6 +32,18 @@ public class RebornFovSavedData extends SavedData {
         }
     }
 
+    public void removeTargetFromAllTeams(String targetId) {
+        boolean changed = false;
+        for (Map<String, TeleportTarget> targets : teamTargets.values()) {
+            if (targets.remove(targetId) != null) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            setDirty();
+        }
+    }
+
     public List<TeleportTarget> getTargets(String teamId) {
         return new ArrayList<>(teamTargets.getOrDefault(teamId, Map.of()).values());
     }

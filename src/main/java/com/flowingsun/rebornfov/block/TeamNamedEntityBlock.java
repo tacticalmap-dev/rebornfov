@@ -73,14 +73,27 @@ public abstract class TeamNamedEntityBlock extends BaseEntityBlock {
             return false;
         }
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof TeamNamedBlockEntity teamNamedBlockEntity)) {
+        if (!(blockEntity instanceof TeamNamedBlockEntity) && !(blockEntity instanceof FovBlockEntity)) {
             return false;
         }
         ItemStack held = player.getItemInHand(hand);
         if (!held.is(Items.NAME_TAG) || !held.hasCustomHoverName()) {
             return false;
         }
-        if (!teamNamedBlockEntity.trySetCustomName(held.getHoverName())) {
+
+        Component customName = held.getHoverName();
+        boolean success = false;
+        Component displayName = null;
+
+        if (blockEntity instanceof TeamNamedBlockEntity teamNamed) {
+            success = teamNamed.trySetCustomName(customName);
+            displayName = teamNamed.getDisplayName();
+        } else if (blockEntity instanceof FovBlockEntity fovBlock) {
+            success = fovBlock.trySetCustomName(customName);
+            displayName = fovBlock.getDisplayName();
+        }
+
+        if (!success) {
             return false;
         }
 
@@ -88,7 +101,7 @@ public abstract class TeamNamedEntityBlock extends BaseEntityBlock {
             held.shrink(1);
         }
         if (level instanceof ServerLevel) {
-            player.displayClientMessage(Component.translatable("message.rebornfov.named", teamNamedBlockEntity.getDisplayName()), true);
+            player.displayClientMessage(Component.translatable("message.rebornfov.named", displayName), true);
         }
         return true;
     }
